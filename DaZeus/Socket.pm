@@ -3,6 +3,11 @@ use strict;
 use warnings;
 use IO::Socket::UNIX;
 
+sub bytes($) {
+	use bytes;
+	return length shift;
+}
+
 sub new {
 	my ($pkg, $socket) = @_;
 	my $self = {};
@@ -27,7 +32,7 @@ sub say {
 	}
 
 	my $sock = $self->{sock};
-	my $len = length $body;
+	my $len = bytes $body;
 	print $sock "!msg $network $channel $len\n";
 	print $sock $body;
 	$sock->flush();
