@@ -26,9 +26,11 @@ sub say {
 	my $body    = delete $args{'body'};
 	foreach(keys %args) {
 		warn "DaZeus::Socket::say() ignored key $_\n";
+		return;
 	}
 	if(!$network || !$channel || !$body) {
 		warn "DaZeus::Socket::say() requires network, channel and body\n";
+		return;
 	}
 
 	my $sock = $self->{sock};
