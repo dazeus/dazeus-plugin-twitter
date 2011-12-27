@@ -10,13 +10,23 @@ sub bytes($) {
 
 sub new {
 	my ($pkg, $socket) = @_;
-	my $self = {};
+	my $self = {socketfile => $socket};
 	bless $self, $pkg;
 
-	$self->{sock} = IO::Socket::UNIX->new(Peer => $socket, Type => SOCK_STREAM);
-	return if(!$self->{sock});
-
 	return $self;
+}
+
+sub connect {
+	my $self = shift;
+	if($self->{sock}) {
+		return;
+	}
+	$self->{sock} = IO::Socket::UNIX->new(Peer => $self->{'socketfile'}, Type => SOCK_STREAM);
+	if(!$self->{sock}) {
+		warn "Failed to connect: $!\n";
+		return;
+	}
+	binmode($self->{sock}, ':utf8');
 }
 
 sub say {
@@ -33,7 +43,12 @@ sub say {
 		return;
 	}
 
+	$self->connect();
 	my $sock = $self->{sock};
+	if(!$sock) {
+		warn "DaZeus::Socket::say() couldn't connect\n";
+		return;
+	}
 	my $len = bytes $body;
 	print $sock "!msg $network $channel $len\n";
 	print $sock $body;
