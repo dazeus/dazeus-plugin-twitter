@@ -60,6 +60,7 @@ if(!$dazeus) {
 	die $!;
 }
 my $last_id     = 1;
+binmode(STDOUT, ':utf8');
 
 while(1) {
 	if($net_twitter->rate_limit_status()->{'remaining_hits'} <= 0) {
