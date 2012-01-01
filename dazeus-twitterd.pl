@@ -62,38 +62,56 @@ if(!$dazeus) {
 my $last_id     = 1;
 binmode(STDOUT, ':utf8');
 
+my $first = 1;
 while(1) {
-	if($net_twitter->rate_limit_status()->{'remaining_hits'} <= 0) {
-		warn "Warning: Rate limit hit, you should decrease your interval (".$opt->interval.")\n"
-			unless $QUIET > 1;
-	}
+	sleep $opt->interval if !$first;
+	$first = 0;
+
 	eval {
-		my $statuses = $net_twitter->list_statuses({
+		if($net_twitter->rate_limit_status()->{'remaining_hits'} <= 0) {
+			warn "Warning: Rate limit hit, you should decrease your interval (".$opt->interval.")\n"
+				unless $QUIET > 1;
+			next;
+		}
+	};
+	if($@) {
+		warn "Failed to fetch Twitter rate limit: $@\n"
+			unless $QUIET > 1;
+		next;
+	}
+	my $statuses;
+	eval {
+		$statuses = $net_twitter->list_statuses({
 			user => $TWUSER,
 			list_id => $LISTID,
 			since_id => $last_id,
 			per_page => $opt->tweetlim,
 		});
-		my @statuses = reverse @$statuses;
-		for my $status(@statuses) {
-			my $body = "-Twitter- <" . $status->{user}{screen_name}
-			           . "> " . decode_entities ($status->{text});
+	};
+	if($@) {
+		warn "Failed to fetch Twitter statuses: $@\n"
+			unless $QUIET > 1;
+		next;
+	}
+	my @statuses = reverse @$statuses;
+	for my $status(@statuses) {
+		my $body = "-Twitter- <" . $status->{user}{screen_name}
+			   . "> " . decode_entities ($status->{text});
+		print "$body\n" unless $QUIET;
+		eval {
 			my $result = $dazeus->say(
 				network => $NETWORK,
 				channel => $CHANNEL,
 				body    => $body,
 			);
-			print "$body\n" unless $QUIET;
-			if( $last_id <= $status->{id} ) {
-				$last_id = $status->{id};
-			}
+		};
+		if($@) {
+			warn "Failed to inform DaZeus of new Twitter status: $@\n";
 		}
-	};
-	if( $@ )
-	{
-		warn("Warning: Could not fetch Tweets: $@") unless $QUIET > 1;
+		if( $last_id <= $status->{id} ) {
+			$last_id = $status->{id};
+		}
 	}
-	sleep $opt->interval;
 }
 
 1;
