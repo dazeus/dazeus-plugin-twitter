@@ -35,7 +35,7 @@ my ($opt, $usage) = describe_options(
 	[ 'quiet|q',		"don't output any warnings" ],
 	[ 'verbose|v',		"output every twitter message" ],
 	[ 'tweetlim|l',		"number of tweets sent at most at once", {default => 5} ],
-	[ 'sock|s=s',		"socket to DaZeus SocketPlugin", {default => 'dazeus.sock'} ],
+	[ 'sock|s=s',		"socket to DaZeus SocketPlugin", {default => 'unix:dazeus.sock'} ],
         [ 'separator|p=s',	"Separator for words (default is comma)", {default => ','} ],
 );
 
@@ -59,7 +59,7 @@ my @words = split /\Q$separator\E/, $WORDS;
 print "Searching for words:\n'" . join("', '", @words) . "'\n";
 
 my $net_twitter = new Net::Twitter::Lite();
-my $dazeus      = new DaZeus($opt->sock);
+my $dazeus      = DaZeus->connect($opt->sock);
 if(!$dazeus) {
 	die $!;
 }
