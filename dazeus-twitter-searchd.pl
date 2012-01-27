@@ -20,7 +20,7 @@ use strict;
 use warnings;
 use Net::Twitter::Lite;
 use HTML::Entities;
-use DaZeus::Socket;
+use DaZeus;
 use Getopt::Long::Descriptive;
 
 use Data::Dumper;
@@ -59,7 +59,7 @@ my @words = split /\Q$separator\E/, $WORDS;
 print "Searching for words:\n'" . join("', '", @words) . "'\n";
 
 my $net_twitter = new Net::Twitter::Lite();
-my $dazeus      = new DaZeus::Socket($opt->sock);
+my $dazeus      = new DaZeus($opt->sock);
 if(!$dazeus) {
 	die $!;
 }
@@ -106,11 +106,7 @@ while(1) {
 			   . "> " . decode_entities ($status->{text});
 		print "$body\n" unless $QUIET;
 		eval {
-			my $result = $dazeus->say(
-				network => $NETWORK,
-				channel => $CHANNEL,
-				body    => $body,
-			);
+			my $result = $dazeus->say($NETWORK, $CHANNEL, $body);
 		};
 		if($@) {
 			warn "Failed to inform DaZeus of new Twitter status: $@\n";
