@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (C) 2011  Sjors Gielen <dazeus@sjorsgielen.nl>
+# Copyright (C) 2012  Sjors Gielen <dazeus@sjorsgielen.nl>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ use strict;
 use warnings;
 use Net::Twitter::Lite;
 use HTML::Entities;
-use DaZeus::Socket;
+use DaZeus;
 use Getopt::Long::Descriptive;
 
 use Data::Dumper;
@@ -55,7 +55,7 @@ if($help or !defined $TWUSER or !defined $LISTID or !defined $NETWORK
 my $QUIET = $opt->verbose ? 0 : $opt->quiet ? 2 : 1;
 
 my $net_twitter = new Net::Twitter::Lite();
-my $dazeus      = new DaZeus::Socket($opt->sock);
+my $dazeus      = new DaZeus($opt->sock);
 if(!$dazeus) {
 	die $!;
 }
@@ -99,11 +99,7 @@ while(1) {
 			   . "> " . decode_entities ($status->{text});
 		print "$body\n" unless $QUIET;
 		eval {
-			my $result = $dazeus->say(
-				network => $NETWORK,
-				channel => $CHANNEL,
-				body    => $body,
-			);
+			my $result = $dazeus->message($NETWORK, $CHANNEL, $body);
 		};
 		if($@) {
 			warn "Failed to inform DaZeus of new Twitter status: $@\n";
