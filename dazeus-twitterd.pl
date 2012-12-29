@@ -54,7 +54,7 @@ if($help or !defined $TWUSER or !defined $LISTID or !defined $NETWORK
 
 my $QUIET = $opt->verbose ? 0 : $opt->quiet ? 2 : 1;
 
-my $net_twitter = new Net::Twitter::Lite();
+my $net_twitter = new Net::Twitter::Lite(legacy_lists_api => 0);
 my $dazeus      = DaZeus->connect($opt->sock);
 if(!$dazeus) {
 	die $!;
@@ -86,7 +86,7 @@ while(1) {
 			list_id => $LISTID,
 			since_id => $last_id,
 			per_page => $opt->tweetlim,
-			include_rts => true,
+			include_rts => 1,
 		});
 	};
 	if($@) {
