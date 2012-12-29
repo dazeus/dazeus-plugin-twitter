@@ -86,6 +86,7 @@ while(1) {
 			list_id => $LISTID,
 			since_id => $last_id,
 			per_page => $opt->tweetlim,
+			include_rts => true,
 		});
 	};
 	if($@) {
