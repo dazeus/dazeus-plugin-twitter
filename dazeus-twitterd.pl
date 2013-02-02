@@ -96,8 +96,13 @@ while(1) {
 	}
 	my @statuses = reverse @$statuses;
 	for my $status(@statuses) {
-		my $body = "-Twitter- <" . $status->{user}{screen_name}
-			   . "> " . decode_entities ($status->{text});
+		my $body = "-Twitter- <" . $status->{user}{screen_name} . "> ";
+		if ($status->{retweeted_status}) {
+			$body .= "RT @" . $status->{retweeted_status}{user}{screen_name} . ": "
+			. decode_entities($status->{retweeted_status}{text});
+		} else {
+			$body .= decode_entities ($status->{text});
+		}
 		print "$body\n" unless $QUIET;
 		eval {
 			my $result = $dazeus->message($NETWORK, $CHANNEL, $body);
