@@ -82,8 +82,8 @@ while(1) {
 	my $statuses;
 	eval {
 		$statuses = $net_twitter->list_statuses({
-			user => $TWUSER,
-			list_id => $LISTID,
+			owner_screen_name => $TWUSER,
+			slug => $LISTID,
 			since_id => $last_id,
 			per_page => $opt->tweetlim,
 			include_rts => 1,
