@@ -106,7 +106,7 @@ while(1) {
 			   . "> " . decode_entities ($status->{text});
 		print "$body\n" unless $QUIET;
 		eval {
-			my $result = $dazeus->say($NETWORK, $CHANNEL, $body);
+			my $result = $dazeus->message($NETWORK, $CHANNEL, $body);
 		};
 		if($@) {
 			warn "Failed to inform DaZeus of new Twitter status: $@\n";
