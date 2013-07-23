@@ -18,7 +18,7 @@
 
 use strict;
 use warnings;
-use Net::Twitter::Lite;
+use Net::Twitter::Lite::WithAPIv1_1;
 use HTML::Entities;
 use DaZeus;
 use Getopt::Long::Descriptive;
@@ -37,6 +37,10 @@ my ($opt, $usage) = describe_options(
 	[ 'verbose|v',		"output every twitter message" ],
 	[ 'tweetlim|l',		"number of tweets sent at most at once", {default => 5} ],
 	[ 'sock|s=s',		"socket to DaZeus SocketPlugin", {default => 'unix:dazeus.sock'} ],
+	[ 'key=s',		"Twitter consumer key" ],
+	[ 'secret=s',		"Twitter consumer secret" ],
+	[ 'token=s',		"Twitter user access token" ],
+	[ 'token_secret=s',	"Twitter user access token secret" ],
 );
 
 my $help = $opt->help;
@@ -54,7 +58,16 @@ if($help or !defined $TWUSER or !defined $LISTID or !defined $NETWORK
 
 my $QUIET = $opt->verbose ? 0 : $opt->quiet ? 2 : 1;
 
-my $net_twitter = new Net::Twitter::Lite(legacy_lists_api => 0);
+unless($opt->key && $opt->secret && $opt->token && $opt->token_secret) {
+	die "You must give --key, --secret, --token and --token_secret\n";
+}
+
+my $net_twitter = new Net::Twitter::Lite::WithAPIv1_1(
+	consumer_key => $opt->key,
+	consumer_secret => $opt->secret,
+	access_token => $opt->token,
+	access_token_secret => $opt->token_secret,
+);
 my $dazeus      = DaZeus->connect($opt->sock);
 if(!$dazeus) {
 	die $!;
@@ -68,7 +81,8 @@ while(1) {
 	$first = 0;
 
 	eval {
-		if($net_twitter->rate_limit_status()->{'remaining_hits'} <= 0) {
+		my $limit = $net_twitter->rate_limit_status()->{'resources'}{'lists'}{'/lists/statuses'};
+		if($limit <= 0) {
 			warn "Warning: Rate limit hit, you should decrease your interval (".$opt->interval.")\n"
 				unless $QUIET > 1;
 			next;
