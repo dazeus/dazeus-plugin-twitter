@@ -94,7 +94,7 @@ while(1) {
 			unless $QUIET > 1;
 		next;
 	}
-	my @statuses = reverse @$statuses;
+	my @statuses = reverse @$statuses[0..4];
 	for my $status(@statuses) {
 		my $body = "-Twitter- <" . $status->{user}{screen_name} . "> ";
 		if ($status->{retweeted_status}) {
