@@ -67,6 +67,7 @@ my $net_twitter = new Net::Twitter::Lite::WithAPIv1_1(
 	consumer_secret => $opt->secret,
 	access_token => $opt->token,
 	access_token_secret => $opt->token_secret,
+	ssl => 1,
 );
 my $dazeus      = DaZeus->connect($opt->sock);
 if(!$dazeus) {
