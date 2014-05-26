@@ -22,6 +22,7 @@ use Net::Twitter::Lite::WithAPIv1_1;
 use HTML::Entities;
 use DaZeus;
 use Getopt::Long::Descriptive;
+use v5.10;
 
 use Data::Dumper;
 my $CHANNEL = pop @ARGV;
@@ -113,10 +114,12 @@ while(1) {
 	for my $status(@statuses) {
 		my $body = "-Twitter- <" . $status->{user}{screen_name} . "> ";
 		if ($status->{retweeted_status}) {
+			$status->{retweeted_status}{text} =~ s/\R/ /g;
 			$body .= "RT @" . $status->{retweeted_status}{user}{screen_name} . ": "
 			. decode_entities($status->{retweeted_status}{text});
 		} else {
-			$body .= decode_entities ($status->{text});
+			$status->{text} =~ s/\R/ /g;
+			$body .= decode_entities($status->{text});
 		}
 		print "$body\n" unless $QUIET;
 		eval {
