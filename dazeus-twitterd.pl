@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Copyright (C) 2012  Sjors Gielen <dazeus@sjorsgielen.nl>
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -22,9 +22,9 @@ use Net::Twitter::Lite::WithAPIv1_1;
 use HTML::Entities;
 use DaZeus;
 use Getopt::Long::Descriptive;
+use LWP::UserAgent;
 use v5.10;
 
-use Data::Dumper;
 my $CHANNEL = pop @ARGV;
 my $NETWORK = pop @ARGV;
 my $LISTID  = pop @ARGV;
@@ -77,6 +77,9 @@ if(!$dazeus) {
 my $last_id     = 1;
 binmode(STDOUT, ':utf8');
 
+# We'll be using this to follow shortened urls.
+my $ua = LWP::UserAgent->new((agent => "DaZeus 2.0"));
+
 my $first = 1;
 while(1) {
 	sleep $opt->interval if !$first;
@@ -121,6 +124,15 @@ while(1) {
 			$status->{text} =~ s/\R/ /g;
 			$body .= decode_entities($status->{text});
 		}
+
+		foreach my $short_url ($body =~ m!(https?://t\.co/[^ ]+)!g) {
+			my $response = $ua->head($short_url);
+			if ($response->is_success) {
+			    my $replacement = "$short_url <" . $response->request->uri->as_string . ">";
+			    $body =~ s/$short_url/$replacement/;
+			}
+		}
+
 		print "$body\n" unless $QUIET;
 		eval {
 			my $result = $dazeus->message($NETWORK, $CHANNEL, $body);
