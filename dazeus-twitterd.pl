@@ -128,7 +128,7 @@ while(1) {
 		foreach my $short_url ($body =~ m!(https?://t\.co/[^ ]+)!g) {
 			my $response = $ua->head($short_url);
 			if ($response->is_success) {
-			    my $replacement = "$short_url <" . $response->request->uri->as_string . ">";
+			    my $replacement = "<" . $response->request->uri->as_string . ">";
 			    $body =~ s/$short_url/$replacement/;
 			}
 		}
